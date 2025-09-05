@@ -45,13 +45,19 @@ const Addtask = ({ on, data }) => {
   const products = useSelector(
     (state) => state.financialProduct.FinancialProducts || []
   );
+  console.log(products);
+  
 
   // company name
   const company = useSelector((state) => state.CompanyName.CompanyNames || []);
+  console.log(company);
+  
   // filter company name according to financial productconst filteredCompanies = company.filter(
   const filteredCompanies = company.filter(
     (item) => item.financialProduct?._id === formData.cat
   );
+  
+  
   useEffect(() => {
     if (data) {
       setFormData(data);
@@ -167,6 +173,7 @@ const Addtask = ({ on, data }) => {
     setIsSubmitting(true);
 
     try {
+      console.log(filteredCompanies);
       // Prepare form data
       const formDataToSend = new FormData();
 
@@ -310,8 +317,8 @@ const Addtask = ({ on, data }) => {
                     onChange={handleChange}
                   >
                     <option value="">Choose Company Name</option>
-                    {filteredCompanies.map((comp) => (
-                      <option key={comp.id} value={comp.companyName}>
+                    {company.map((comp) => (
+                      <option key={comp._id} value={comp.companyName}>
                         {comp.companyName}
                       </option>
                     ))}

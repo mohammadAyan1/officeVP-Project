@@ -18,12 +18,10 @@ const Composite = () => {
     (state) => state.compositeTask
   );
 
-
   console.log(tasks, "tasks");
   console.log(loading, "loading");
   console.log(error, "error");
   console.log(successMessage, "successMessage");
-
 
   const [activeTab, setActiveTab] = useState("view");
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,7 +35,7 @@ const Composite = () => {
 
   useEffect(() => {
     dispatch(fetchAllCompositeTasks());
-  }, [dispatch,successMessage]);
+  }, [dispatch, successMessage]);
 
   const openModal = (type, task) => {
     setCurrentTask(task);
@@ -73,21 +71,18 @@ const Composite = () => {
 
   const indexOfLastEntry = currentPage * entriesPerPage;
   const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
-  const displayedTasks = tasks || [];
-  console.log(displayedTasks);
-  
-  // const currentEntries = displayedTasks.slice(
-  //   indexOfFirstEntry,
-  //   indexOfLastEntry
-  // );
+  const displayedTasks = tasks || { tasks: [] } || 1;
 
   const currentEntries = (displayedTasks?.tasks || []).slice(
-  indexOfFirstEntry,
-  indexOfLastEntry
-);
+    indexOfFirstEntry,
+    indexOfLastEntry
+  );
 
   console.log(currentEntries);
-  const totalPages = Math.ceil(displayedTasks.length / entriesPerPage);
+
+  const totalPages = Math.ceil(
+    (displayedTasks?.tasks?.length || 0) / entriesPerPage
+  );
   console.log(activeTab);
 
   return (
@@ -174,7 +169,7 @@ const Composite = () => {
                           {currentEntries.map((task, index) => (
                             <tr key={task._id || index}>
                               <td>{indexOfFirstEntry + index + 1}</td>
-                              <td>{task.cat}</td>
+                              <td>{task.cat.category}</td>
                               <td>{task.sub}</td>
                               <td>{task.depart}</td>
                               <td>{task.name}</td>
