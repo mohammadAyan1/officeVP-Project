@@ -17,7 +17,13 @@ const Composite = () => {
   const { tasks, loading, error, successMessage } = useSelector(
     (state) => state.compositeTask
   );
-  console.log(tasks, "hfkdshfkjds");
+
+
+  console.log(tasks, "tasks");
+  console.log(loading, "loading");
+  console.log(error, "error");
+  console.log(successMessage, "successMessage");
+
 
   const [activeTab, setActiveTab] = useState("view");
   const [currentPage, setCurrentPage] = useState(1);
@@ -31,14 +37,7 @@ const Composite = () => {
 
   useEffect(() => {
     dispatch(fetchAllCompositeTasks());
-  }, [dispatch]);
-
-  useEffect(() => {
-    // if (successMessage) {
-    //   alert(successMessage);
-    // }
-    dispatch(fetchAllCompositeTasks());
-  }, [successMessage]);
+  }, [dispatch,successMessage]);
 
   const openModal = (type, task) => {
     setCurrentTask(task);
@@ -75,12 +74,21 @@ const Composite = () => {
   const indexOfLastEntry = currentPage * entriesPerPage;
   const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
   const displayedTasks = tasks || [];
-  const currentEntries = displayedTasks.slice(
-    indexOfFirstEntry,
-    indexOfLastEntry
-  );
+  console.log(displayedTasks);
+  
+  // const currentEntries = displayedTasks.slice(
+  //   indexOfFirstEntry,
+  //   indexOfLastEntry
+  // );
+
+  const currentEntries = (displayedTasks?.tasks || []).slice(
+  indexOfFirstEntry,
+  indexOfLastEntry
+);
+
   console.log(currentEntries);
   const totalPages = Math.ceil(displayedTasks.length / entriesPerPage);
+  console.log(activeTab);
 
   return (
     <div className="mt-2 mb-4">
@@ -108,7 +116,7 @@ const Composite = () => {
                   {loading ? (
                     <p>Loading tasks...</p>
                   ) : error ? (
-                    <p>Error: {error}</p>
+                    <p>Error: {error} </p>
                   ) : (
                     <div className="table-responsive">
                       <div className="row mb-3">

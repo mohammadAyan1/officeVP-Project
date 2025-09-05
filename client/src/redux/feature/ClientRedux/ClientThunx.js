@@ -99,6 +99,30 @@ export const addProposedFinancialPlan = createAsyncThunk(
 );
 
 
+// update Proposed status
+export const updateProposedStatus = createAsyncThunk(
+  'client/updateProposedStatus',
+  async ({ id, plans }, { rejectWithValue }) => {
+    console.log(id,plans);
+    
+    try {
+      const response = await axios.put(`/api/client/add/updateproposedplan/${id}`, plans, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      console.log(response);
+      
+      console.log("Add proposed plan successfully", response?.data);
+      return response?.data;
+    } catch (error) {
+      return rejectWithValue(
+        error?.response?.data?.message || error?.response?.data?.error || "An error occurred while adding the proposed financial plan."
+      );
+    }
+  }
+);
+
 
 // 6: Get All Clients
 export const getAllClients = createAsyncThunk(

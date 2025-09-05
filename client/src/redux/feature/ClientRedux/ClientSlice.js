@@ -6,6 +6,7 @@ import {
   addFinancialInfo,
   addFuturePrioritiesAndNeeds,
   addProposedFinancialPlan,
+  updateProposedStatus,
   getAllClients,
   getClientById,
   updateCleintStatus,
@@ -122,7 +123,12 @@ const clientSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-
+      //Update Proposed status
+      .addCase(updateProposedStatus.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        state.proposedPlan = action.payload;
+      })
       // getAllClients
       .addCase(getAllClients.pending, (state) => {
         state.loading = true;

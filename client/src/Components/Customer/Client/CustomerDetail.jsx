@@ -1,11 +1,10 @@
-import React, { useEffect, useReducer, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { Modal, Button, Table } from "react-bootstrap";
-import { Row, Col } from 'react-bootstrap';
-import { useRef } from 'react';
-import KycComponent from "./KYCComponent"
-
-
+import { Row, Col } from "react-bootstrap";
+import { useRef } from "react";
+import KycComponent from "./KYCComponent";
+import { Pencil } from "lucide-react";
 
 import {
   FiUser,
@@ -28,21 +27,63 @@ import {
 } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import {getClientById } from "../../../redux/feature/ClientRedux/ClientThunx";
+import { getClientById } from "../../../redux/feature/ClientRedux/ClientThunx";
 import TasksTab from "../TaskTab";
+import {
+  updateProposedStatus,
+  getAllClients,
+} from "../../../redux/feature/ClientRedux/ClientThunx";
+import { toast } from "react-toastify";
 
 const CustomerDetail = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const [checklists, setChecklists] = useState([{ name: "", file: null }]);
   const [textChecklists, setTextChecklists] = useState([""]);
   const [userData, setUserData] = useState(null);
-  const [clientId, setclientId] = useState("");
+  // const [clientId, setclientId] = useState("");
   const { id } = useParams();
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState("");
-  const [futurePriorities, setfuturePriorities] = useState([])
-  const [proposedPlans, setproposedPlans] = useState([])
+  const [futurePriorities, setfuturePriorities] = useState([]);
+  const [proposedPlans, setproposedPlans] = useState([]);
+  const [plans, setPlan] = useState({});
+  const [showEditStatus, setShowEditStatus] = useState({
+    
+    id: null,
+  });
 
+  
+
+  const dispatch = useDispatch();
+  const options = ["Pending", "Proposed", "Accepted"];
+
+  useEffect(() => {
+    console.log("Plan updated:", plans);
+  }, [plans]);
+
+  const handleChange = (id, value) => {
+    console.log(id, value);
+
+    setPlan((prev) => ({ ...prev, status: value, selected: id }));
+  };
+
+  const handleSubmit = () => {
+    console.log(plans);
+    dispatch(updateProposedStatus({ id, plans }))
+      .unwrap()
+      .then((res) => {
+        console.log(res);
+        toast.success("Client status updated successfully");
+        setShowEditStatus({id:null});
+        // dispatch(getAllClients());
+        init();
+
+      })
+      .catch((err) => {
+        console.log(err);
+        toast.error(err || "Failed to update client status");
+      });
+  };
 
   const handleOpenModal = (type) => {
     setModalType(type);
@@ -54,7 +95,6 @@ const CustomerDetail = () => {
     setModalType("");
   };
 
-
   const kycModalRef = useRef();
 
   const handleKycOpen = () => {
@@ -62,7 +102,6 @@ const CustomerDetail = () => {
   };
 
   const user = useSelector((state) => state.client);
-
 
   const [showKycForm, setShowKycForm] = useState(false);
   const [kycStatus, setKycStatus] = useState(
@@ -106,45 +145,45 @@ const CustomerDetail = () => {
   // Userdataconst
 
   console.log(id);
+  console.log(showEditStatus);
+  
 
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
 
-  useEffect(() => {
-    const init = async () => {
+   const init = async () => {
       const res = await dispatch(getClientById(id)).unwrap();
       console.log("client Details fetched successfully", res);
       setUserData(res?.client);
-      setfuturePriorities(userData?.futurePriorities?.futurePriorities)
-      setproposedPlans(userData?.proposedPlan)
-    };
-    init();
-  }, []);
+      console.log(res?.client?.proposedPlan);
 
+      setfuturePriorities(userData?.futurePriorities?.futurePriorities);
+      setproposedPlans(userData?.proposedPlan);
+    };
+
+
+  useEffect(() => {
+    init();
+  }, [dispatch]);
 
   const addChecklist = () => {
     setChecklists([...checklists, { name: "", file: null }]);
   };
-
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-GB", {
       day: "numeric",
       month: "short",
-      year: "numeric"
+      year: "numeric",
     });
   };
 
-
-
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR'
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
     }).format(amount);
   };
-
-
 
   const formatFieldName = (key) => {
     return key
@@ -155,15 +194,26 @@ const CustomerDetail = () => {
 
   // Fields that should be formatted as currency
   const currencyFields = [
-    'amount', 'totalAmount', 'premium', 'sumAssured', 'investment',
-    'monthlyAmount', 'yearlyAmount', 'targetAmount', 'currentValue'
+    "amount",
+    "totalAmount",
+    "premium",
+    "sumAssured",
+    "investment",
+    "monthlyAmount",
+    "yearlyAmount",
+    "targetAmount",
+    "currentValue",
   ];
 
   // Fields that should be formatted as dates
   const dateFields = [
-    'date', 'startDate', 'endDate', 'maturityDate', 'createdAt', 'updatedAt'
+    "date",
+    "startDate",
+    "endDate",
+    "maturityDate",
+    "createdAt",
+    "updatedAt",
   ];
-
 
   // Remove checklist item
   const removeChecklist = (index) => {
@@ -209,11 +259,9 @@ const CustomerDetail = () => {
     return age;
   };
 
-
-  const hasValidFamilyMembers = userData?.familyMembers?.some(member =>
-    member.name && member.name.trim() !== ''
+  const hasValidFamilyMembers = userData?.familyMembers?.some(
+    (member) => member.name && member.name.trim() !== ""
   );
-
 
   return (
     <>
@@ -235,15 +283,17 @@ const CustomerDetail = () => {
           <div className="profile-grid">
             {/* Profile Card */}
             <div className="profile-card">
-             
-
               <div className="profile-info">
-                <h2 className="profile-name">{userData?.personalDetails?.name || "N/A"}</h2>
+                <h2 className="profile-name">
+                  {userData?.personalDetails?.name || "N/A"}
+                </h2>
                 <div className="profile-meta">
                   <span className="badge text-bg-danger">
                     {userData?.client?.personalDetails?.groupCode || "N/A"}
                   </span>
-                  <span className="badge secondary">{userData.grade || "N/A"}</span>
+                  <span className="badge secondary">
+                    {userData.grade || "N/A"}
+                  </span>
                 </div>
                 <div className="detail-item">
                   <FiPhone className="detail-icon" />
@@ -254,8 +304,6 @@ const CustomerDetail = () => {
                     </p>
                   </div>
                 </div>
-
-                
 
                 <div className="profile-details">
                   <div className="detail-item">
@@ -296,10 +344,7 @@ const CustomerDetail = () => {
                     </div>
                   </div>
 
-
                   <div className="mt-4">
-
-
                     {/* Bootstrap Modal */}
                     <div
                       className="modal fade"
@@ -326,12 +371,13 @@ const CustomerDetail = () => {
                             <p>
                               <strong>Current KYC Status:</strong>{" "}
                               <span
-                                className={`badge bg-${kycStatus === "Approved"
-                                  ? "success"
-                                  : kycStatus === "Rejected"
+                                className={`badge bg-${
+                                  kycStatus === "Approved"
+                                    ? "success"
+                                    : kycStatus === "Rejected"
                                     ? "danger"
                                     : "warning"
-                                  }`}
+                                }`}
                               >
                                 {kycStatus}
                               </span>
@@ -391,7 +437,9 @@ const CustomerDetail = () => {
 
                 <div className="profile-stats">
                   <div className="stat-item">
-                    <p className="stat-value">{userData?.familyMembers.length}</p>
+                    <p className="stat-value">
+                      {userData?.familyMembers.length}
+                    </p>
                     <p className="stat-label">Family Members</p>
                   </div>
                   <div className="stat-item">
@@ -442,14 +490,12 @@ const CustomerDetail = () => {
                 </div>
               </div>
 
-             
               <div className="tabs-container">
                 <Tabs
                   selectedIndex={tabIndex}
                   onSelect={(index) => setTabIndex(index)}
                 >
                   <TabList className="custom-tablist">
-
                     <Tab
                       className={`custom-tab ${tabIndex === 0 ? "active" : ""}`}
                     >
@@ -482,25 +528,21 @@ const CustomerDetail = () => {
                       <FaBullseye className="tab-icon" />
                       <span>Proposal Financial Plan"</span>
                     </Tab>
-                   
-                    <Tab className={`custom-tab ${tabIndex === 5 ? "active" : ""}`}>
 
+                    <Tab
+                      className={`custom-tab ${tabIndex === 5 ? "active" : ""}`}
+                    >
                       <FaTasks className="tab-icon" />
                       <span>Kyc</span>
-
                     </Tab>
 
-
-                     <Tab
+                    <Tab
                       className={`custom-tab ${tabIndex === 6 ? "active" : ""}`}
                     >
                       <FaTasks className="tab-icon" />
                       <span>Tasks</span>
                     </Tab>
-
-
                   </TabList>
-
 
                   {/* // personal Details tab */}
                   <TabPanel>
@@ -524,7 +566,8 @@ const CustomerDetail = () => {
                                         Group Code:
                                       </span>
                                       <span className="fw-semibold">
-                                        {userData?.personalDetails?.groupCode || "N/A"}
+                                        {userData?.personalDetails?.groupCode ||
+                                          "N/A"}
                                       </span>
                                     </div>
                                   </div>
@@ -536,7 +579,8 @@ const CustomerDetail = () => {
                                         Group Head:
                                       </span>
                                       <span className="fw-semibold">
-                                        {userData?.personalDetails?.familyHead || "N/A"}
+                                        {userData?.personalDetails
+                                          ?.familyHead || "N/A"}
                                       </span>
                                     </div>
                                   </div>
@@ -550,7 +594,8 @@ const CustomerDetail = () => {
                                         WhatsApp:
                                       </span>
                                       <span className="fw-semibold">
-                                        {userData?.personalDetails?.whatsappNo || "N/A"}
+                                        {userData?.personalDetails
+                                          ?.whatsappNo || "N/A"}
                                       </span>
                                     </div>
                                   </div>
@@ -562,7 +607,8 @@ const CustomerDetail = () => {
                                         PA Name:
                                       </span>
                                       <span className="fw-semibold">
-                                        {userData?.personalDetails?.paName || "N/A"}
+                                        {userData?.personalDetails?.paName ||
+                                          "N/A"}
                                       </span>
                                     </div>
                                   </div>
@@ -574,10 +620,8 @@ const CustomerDetail = () => {
                                         Area:
                                       </span>
                                       <span className="fw-semibold text-break">
-                                        {
-                                          userData?.personalDetails
-                                            ?.preferredMeetingArea || "N/A"
-                                        }
+                                        {userData?.personalDetails
+                                          ?.preferredMeetingArea || "N/A"}
                                       </span>
                                     </div>
                                   </div>
@@ -592,7 +636,8 @@ const CustomerDetail = () => {
                                         PA Mobile:
                                       </span>
                                       <span className="fw-semibold">
-                                        {userData?.personalDetails?.paMobileNo || "N/A"}
+                                        {userData?.personalDetails
+                                          ?.paMobileNo || "N/A"}
                                       </span>
                                     </div>
                                   </div>
@@ -606,10 +651,8 @@ const CustomerDetail = () => {
                                         Meeting Address:
                                       </span>
                                       <span className="fw-semibold">
-                                        {
-                                          userData?.personalDetails
-                                            ?.preferredMeetingAddr || "N/A"
-                                        }
+                                        {userData?.personalDetails
+                                          ?.preferredMeetingAddr || "N/A"}
                                       </span>
                                     </div>
                                   </div>
@@ -621,7 +664,8 @@ const CustomerDetail = () => {
                                         Best Time:
                                       </span>
                                       <span className="fw-semibold">
-                                        {userData?.personalDetails?.bestTime || "N/A"}
+                                        {userData?.personalDetails?.bestTime ||
+                                          "N/A"}
                                       </span>
                                     </div>
                                   </div>
@@ -648,10 +692,8 @@ const CustomerDetail = () => {
                                         Purpose:
                                       </span>
                                       <span className="fw-semibold">
-                                        {
-                                          userData?.personalDetails
-                                            ?.callingPurpose || "N/A"
-                                        }
+                                        {userData?.personalDetails
+                                          ?.callingPurpose || "N/A"}
                                       </span>
                                     </div>
                                   </div>
@@ -664,7 +706,8 @@ const CustomerDetail = () => {
                                         Select Name:
                                       </span>
                                       <span className="fw-semibold">
-                                        {userData?.personalDetails?.name || "N/A"}
+                                        {userData?.personalDetails?.name ||
+                                          "N/A"}
                                       </span>
                                     </div>
                                   </div>
@@ -677,10 +720,8 @@ const CustomerDetail = () => {
                                         CRE Name:
                                       </span>
                                       <span className="fw-semibold">
-                                        {
-                                          userData?.personalDetails
-                                            ?.allocatedCRE || "N/A"
-                                        }
+                                        {userData?.personalDetails
+                                          ?.allocatedCRE || "N/A"}
                                       </span>
                                     </div>
                                   </div>
@@ -693,111 +734,131 @@ const CustomerDetail = () => {
                     </div>
                   </TabPanel>
 
-
                   {/* fmily members tab */}
                   <TabPanel>
                     <div className="tab-content">
+                      {userData?.familyMembers?.length > 0 ? (
+                        <div className="family-grid">
+                          <h3>Family Members</h3>
+                          {userData?.familyMembers
+                            ?.filter(
+                              (member) =>
+                                member?.relation?.toLowerCase() !== "self"
+                            )
+                            .map((member, index) => (
+                              <div
+                                className="family-card"
+                                key={`member-${index}`}
+                              >
+                                <div className="family-avatar">
+                                  {member?.name?.charAt(0) || "N"}
+                                </div>
+                                <div className="family-info">
+                                  <h3 className="mb-2 fw-semibold">
+                                    {member?.name}
+                                  </h3>
 
-                      {userData?.familyMembers?.length > 0 ? <div className="family-grid">
-                        <h3>Family Members</h3>
-                        {userData?.familyMembers
-                          ?.filter(
-                            (member) =>
-                              member?.relation?.toLowerCase() !== "self"
-                          )
-                          .map((member, index) => (
-                            <div
-                              className="family-card"
-                              key={`member-${index}`}
-                            >
-                              <div className="family-avatar">
-                                {member?.name?.charAt(0) || "N"}
+                                  <p>
+                                    <strong>Relation:</strong>{" "}
+                                    {member?.relation || "N/A"}
+                                  </p>
+
+                                  <p>
+                                    <strong>Age:</strong>{" "}
+                                    {member?.dobActual
+                                      ? `${calculateAge(
+                                          member.dobActual
+                                        )} years (${new Date(
+                                          member.dobActual
+                                        ).toLocaleDateString("en-GB")})`
+                                      : "N/A"}
+                                  </p>
+
+                                  <p>
+                                    <strong>Annual Income:</strong>{" "}
+                                    {member?.annualIncome || "N/A"}
+                                  </p>
+
+                                  <p>
+                                    <strong>Contact :</strong>{" "}
+                                    {member?.contact || "N/A"}
+                                  </p>
+
+                                  <span className="badge bg-info text-dark">
+                                    {member?.occupation || "Dependent"}
+                                  </span>
+                                </div>
                               </div>
-                              <div className="family-info">
-                                <h3 className="mb-2 fw-semibold">
-                                  {member?.name}
-                                </h3>
-
-                                <p>
-                                  <strong>Relation:</strong> {member?.relation || "N/A"}
-                                </p>
-
-                                <p>
-                                  <strong>Age:</strong>{" "}
-                                  {member?.dobActual
-                                    ? `${calculateAge(
-                                      member.dobActual
-                                    )} years (${new Date(
-                                      member.dobActual
-                                    ).toLocaleDateString("en-GB")})`
-                                    : "N/A"}
-                                </p>
-
-                                <p>
-                                  <strong>Annual Income:</strong>{" "}
-                                  {member?.annualIncome || "N/A"}
-                                </p>
-                                 <p>
-                                  <strong>Contact:</strong>{" "}
-                                  {member?.contact || "N/A"}
-                                </p>
-
-                                <span className="badge bg-info text-dark">
-                                  {member?.occupation || "Dependent"}
-                                </span>
-
-                              </div>
-                            </div>
-                          ))}
-
-
-                      </div> : "No Family Members"}
+                            ))}
+                        </div>
+                      ) : (
+                        "No Family Members"
+                      )}
                     </div>
                   </TabPanel>
 
-
-                   {/* // financial tab    */}
+                  {/* // financial tab    */}
                   <TabPanel>
                     <div className="tab-content">
                       <h3>Financial Overview</h3>
 
                       <Row className="mb-3">
                         <Col md={4}>
-                          <div className="financial-card  " style={{ background: "darkblue" }} onClick={() => handleOpenModal('insurance')}>
-                            <h4>Total Insurance
-                            </h4>
+                          <div
+                            className="financial-card  "
+                            style={{ background: "darkblue" }}
+                            onClick={() => handleOpenModal("insurance")}
+                          >
+                            <h4>Total Insurance</h4>
 
                             {/* <p className="meta">`Total ${userData?.financialInfo?.insurance.length} policies`</p> */}
-                            <p className="meta">Total {userData?.financialInfo?.insurance?.length || 0} policies</p>
+                            <p className="meta">
+                              Total{" "}
+                              {userData?.financialInfo?.insurance?.length || 0}{" "}
+                              policies
+                            </p>
                           </div>
                         </Col>
 
                         <Col md={4}>
-                          <div className="financial-card " style={{ background: "green" }} onClick={() => handleOpenModal('investment')}>
+                          <div
+                            className="financial-card "
+                            style={{ background: "green" }}
+                            onClick={() => handleOpenModal("investment")}
+                          >
                             <h4>Total Investment</h4>
 
                             {/* <p className="meta">`Total ${userData?.financialInfo?.investments.length} Investments`</p> */}
-                            <p className="meta">Total {userData?.financialInfo?.investments?.length || 0} Investments</p>
+                            <p className="meta">
+                              Total{" "}
+                              {userData?.financialInfo?.investments?.length ||
+                                0}{" "}
+                              Investments
+                            </p>
                           </div>
                         </Col>
 
                         <Col md={4}>
-                          <div style={{ background: "darkred" }} className="financial-card " onClick={() => handleOpenModal('loan')}>
+                          <div
+                            style={{ background: "darkred" }}
+                            className="financial-card "
+                            onClick={() => handleOpenModal("loan")}
+                          >
                             <h4>Loan & Liabilities</h4>
 
                             {/* <p className="meta">`Total ${userData?.financialInfo?.loans.length}  Loan & Liabilities`</p> */}
-                            <p className="meta">Total {userData?.financialInfo?.loans?.length || 0} Loan & Liabilities</p>
+                            <p className="meta">
+                              Total{" "}
+                              {userData?.financialInfo?.loans?.length || 0} Loan
+                              & Liabilities
+                            </p>
                           </div>
                         </Col>
                       </Row>
-
-
                     </div>
                   </TabPanel>
 
-
-              
-                   {/* // future priorities  */}
+                  {/* // future priorities  */}
                   <TabPanel>
                     <div className="">
                       <div className="card-body mb-5">
@@ -807,56 +868,77 @@ const CustomerDetail = () => {
 
                         {userData?.futurePriorities.length > 0 ? (
                           <div className="row">
-                            {userData?.futurePriorities.map((priority, index) => (
-                              <div key={priority._id || index} className="col-md-6 col-lg-4 mb-4">
-                                <div className="card h-100 shadow-sm">
-                                  <div className="card-header badge bg-info text-dark">
-                                    <h6 className="mb-0">{priority.priorityName || 'Unnamed Priority'}</h6>
-                                  </div>
-                                  <div className="card-body">
-                                    <div className="mb-3">
-                                      <strong>Approximate Amount:</strong>
-                                      <div className="text-success fs-5">
-                                        {priority.approxAmount ? formatCurrency(priority.approxAmount) : 'Not specified'}
-                                      </div>
+                            {userData?.futurePriorities.map(
+                              (priority, index) => (
+                                <div
+                                  key={priority._id || index}
+                                  className="col-md-6 col-lg-4 mb-4"
+                                >
+                                  <div className="card h-100 shadow-sm">
+                                    <div className="card-header badge bg-info text-dark">
+                                      <h6 className="mb-0">
+                                        {priority.priorityName ||
+                                          "Unnamed Priority"}
+                                      </h6>
                                     </div>
-
-                                    <div className="mb-3">
-                                      <strong>Duration:</strong>
-                                      <div>{priority.duration || 'Not specified'}</div>
-                                    </div>
-
-                                    <div className="mb-3">
-                                      <strong>Members:</strong>
-                                      <div>
-                                        {priority.members && priority.members.length > 0 ? (
-                                          priority.members.map((member, memberIndex) => (
-                                            <span key={memberIndex} className="badge bg-info text-dark me-1 mb-1">
-                                              {member}
-                                            </span>
-                                          ))
-                                        ) : (
-                                          'Not specified'
-                                        )}
+                                    <div className="card-body">
+                                      <div className="mb-3">
+                                        <strong>Approximate Amount:</strong>
+                                        <div className="text-success fs-5">
+                                          {priority.approxAmount
+                                            ? formatCurrency(
+                                                priority.approxAmount
+                                              )
+                                            : "Not specified"}
+                                        </div>
                                       </div>
-                                    </div>
 
-                                    {priority.remark && (
-                                      <div className="mb-2">
-                                        <strong>Remark:</strong>
-                                        <div className="text-muted small">{priority.remark}</div>
+                                      <div className="mb-3">
+                                        <strong>Duration:</strong>
+                                        <div>
+                                          {priority.duration || "Not specified"}
+                                        </div>
                                       </div>
-                                    )}
+
+                                      <div className="mb-3">
+                                        <strong>Members:</strong>
+                                        <div>
+                                          {priority.members &&
+                                          priority.members.length > 0
+                                            ? priority.members.map(
+                                                (member, memberIndex) => (
+                                                  <span
+                                                    key={memberIndex}
+                                                    className="badge bg-info text-dark me-1 mb-1"
+                                                  >
+                                                    {member}
+                                                  </span>
+                                                )
+                                              )
+                                            : "Not specified"}
+                                        </div>
+                                      </div>
+
+                                      {priority.remark && (
+                                        <div className="mb-2">
+                                          <strong>Remark:</strong>
+                                          <div className="text-muted small">
+                                            {priority.remark}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
+                              )
+                            )}
                           </div>
                         ) : (
                           <div className="text-center py-4">
                             <div className="alert alert-info">
-
-                              <p className="mb-0 text-muted">No future priorities have been added yet.</p>
+                              <p className="mb-0 text-muted">
+                                No future priorities have been added yet.
+                              </p>
                             </div>
                           </div>
                         )}
@@ -876,7 +958,8 @@ const CustomerDetail = () => {
                                 <span className="text-success fw-bold">
                                   {formatCurrency(
                                     userData?.futurePriorities.reduce(
-                                      (total, priority) => total + (priority.approxAmount || 0),
+                                      (total, priority) =>
+                                        total + (priority.approxAmount || 0),
                                       0
                                     )
                                   )}
@@ -889,140 +972,230 @@ const CustomerDetail = () => {
                     </div>
                   </TabPanel>
 
-
-
                   {/* //proposedPlan */}
-                    <TabPanel>
-  <div className="tab-content p-4">
-    <div className="d-flex justify-content-between align-items-center mb-4">
-      <h3 className=" fw-bold mb-0">
-        <i className="bi bi-graph-up-arrow me-2"></i>
-        Proposed Financial Plans
-      </h3>
-      <span className="badge bg-info text-dark fs-6 px-3 py-2">
-        {userData?.proposedPlan?.length || 0} Plans
-      </span>
-    </div>
+                  <TabPanel>
+                    <div className="tab-content p-4">
+                      <div className="d-flex justify-content-between align-items-center mb-4">
+                        <h3 className=" fw-bold mb-0">
+                          <i className="bi bi-graph-up-arrow me-2"></i>
+                          Proposed Financial Plans
+                        </h3>
+                        <span className="badge bg-info text-dark fs-6 px-3 py-2">
+                          {userData?.proposedPlan?.length || 0} Plans
+                        </span>
+                      </div>
 
-    {userData?.proposedPlan && userData?.proposedPlan?.length > 0 ? (
-      <>
-        <div className="row">
-          {userData?.proposedPlan?.map((plan, index) => {
-            return (
-              <div className="col-lg-6 col-xl-4 mb-4" key={index}>
-                <div className="card h-100 shadow-sm border-0 position-relative overflow-hidden">
-                  <div className="card-header bg-gradient-primary text-white border-0 py-3 badge bg-info text-dark">
-                    <div className="d-flex justify-content-between align-items-center ">
-                      <h6 className="mb-0 fw-bold">
-                        <i className="bi bi-file-earmark-text me-2"></i>
-                        Plan {index + 1}
-                      </h6>
-                    
+                      {userData?.proposedPlan &&
+                      userData?.proposedPlan?.length > 0 ? (
+                        <>
+                          <div className="row">
+                            {userData?.proposedPlan?.map((plan, index) => {
+                              console.log(plan);
+                              return (
+                                <div
+                                  className="col-lg-6 col-xl-4 mb-4"
+                                  key={index}
+                                >
+                                  <div className="card h-100 shadow-sm border-0 position-relative overflow-hidden">
+                                    <div className="card-header bg-gradient-primary text-white border-0 py-3 badge bg-info text-dark">
+                                      <div className="d-flex justify-content-between align-items-center ">
+                                        <h6 className="mb-0 fw-bold">
+                                          <i className="bi bi-file-earmark-text me-2"></i>
+                                          Plan {index + 1}
+                                        </h6>
+                                      </div>
+                                    </div>
+
+                                    <div className="card-body p-4">
+                                      <div className="row g-3">
+                                        <div className="col-12">
+                                          <div className="p-3 bg-light rounded-3">
+                                            <small className="text-muted fw-medium">
+                                              Created On
+                                            </small>
+                                            <div className="fw-bold text-dark">
+                                              {formatDate(
+                                                plan?.createdDate || "N/A"
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        <div className="col-12">
+                                          <div className="p-3 bg-light rounded-3">
+                                            <small className="text-muted fw-medium">
+                                              Member Name
+                                            </small>
+                                            <div className="fw-bold text-dark">
+                                              {plan?.memberName || "N/A"}
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        <div className="col-12">
+                                          <div className="p-3 bg-light rounded-3">
+                                            <small className="text-muted fw-medium">
+                                              Financial Product
+                                            </small>
+                                            <div className="fw-bold text-dark">
+                                              {plan?.financialProduct || "N/A"}
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        <div className="col-12">
+                                          <div className="p-3 bg-light rounded-3">
+                                            <small className="text-muted fw-medium">
+                                              Plan Name
+                                            </small>
+                                            <div className="fw-bold text-dark">
+                                              {plan?.planName || "N/A"}
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {plan._id === showEditStatus.id ?
+
+                                         (
+                                          <div className="col-12">
+                                            <div className="p-3 bg-light rounded-3">
+                                              <select
+                                                name="select"
+                                                value={plans.status}
+                                                onChange={(e) =>
+                                                  handleChange(
+                                                    plan?._id,
+                                                    e.target.value
+                                                  )
+                                                }
+                                                className="border-hidden"
+                                              >
+                                                {options.map((opt) => (
+                                                  <option key={opt} value={opt}>
+                                                    {opt}
+                                                  </option>
+                                                ))}
+                                              </select>
+                                            </div>
+
+                                            <button
+                                              type="button"
+                                              onClick={() => handleSubmit()}
+                                              className="btn btn-primary mt-2"
+                                            >
+                                              Save
+                                            </button>
+
+                                            <button
+                                              type="button"
+                                              onClick={() =>
+                                                setShowEditStatus({id:null})
+                                              }
+                                              className="btn btn-primary mt-2"
+                                            >
+                                              Cancel
+                                            </button>
+                                          </div>
+                                        )
+                                        
+                                        : (
+                                          <div className="col-12">
+                                            <div className="p-3 bg-light rounded-3">
+                                              <small className="text-muted fw-medium">
+                                                Status
+                                              </small>
+                                              <div className="fw-bold text-dark">
+                                                {plan?.status || "N/A"}
+                                              </div>
+                                              <button
+                                                type="button"
+                                                onClick={() =>
+                                                  setShowEditStatus({id:plan._id})
+                                                }
+                                                className="bg-red mt-2 border-none rounded-lg"
+                                              >
+                                                {/* <Pencil /> */}
+                                                Edit
+                                              </button>
+                                            </div>
+                                          </div>
+                                        ) 
+                                        }
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })
+                            }
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center py-5">
+                          <div className="mb-4">
+                            <i className="bi bi-inbox display-1 text-muted"></i>
+                          </div>
+                          <div
+                            className="alert alert-info border-0 shadow-sm mx-auto"
+                            style={{ maxWidth: "400px" }}
+                          >
+                            <h5 className="alert-heading mb-2">
+                              <i className="bi bi-info-circle me-2"></i>
+                              No Plans Available
+                            </h5>
+                            <p className="mb-0">
+                              No Proposed Financial Plans have been added yet.
+                              Create your first plan to get started!
+                            </p>
+                          </div>
+                          <button className="btn btn-primary mt-3">
+                            <i className="bi bi-plus-circle me-2"></i>
+                            Add New Plan
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  
-                  <div className="card-body p-4">
-                    <div className="row g-3">
-                      <div className="col-12">
-                        <div className="p-3 bg-light rounded-3">
-                          <small className="text-muted fw-medium">Created On</small>
-                          <div className="fw-bold text-dark">{formatDate(plan?.createdDate || "N/A")}</div>
-                        </div>
-                      </div>
-                      
-                      <div className="col-12">
-                        <div className="p-3 bg-light rounded-3">
-                          <small className="text-muted fw-medium">Member Name</small>
-                          <div className="fw-bold text-dark">{plan?.memberName || 'N/A'}</div>
-                        </div>
-                      </div>
-                      
-                      <div className="col-12">
-                        <div className="p-3 bg-light rounded-3">
-                          <small className="text-muted fw-medium">Financial Product</small>
-                          <div className="fw-bold text-dark">{plan?.financialProduct || 'N/A'}</div>
-                        </div>
-                      </div>
-                      
-                      <div className="col-12">
-                        <div className="p-3 bg-light rounded-3">
-                          <small className="text-muted fw-medium">Plan Name</small>
-                          <div className="fw-bold text-dark">{plan?.planName || 'N/A'}</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                 
-                  
-                  
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </>
-    ) : (
-      <div className="text-center py-5">
-        <div className="mb-4">
-          <i className="bi bi-inbox display-1 text-muted"></i>
-        </div>
-        <div className="alert alert-info border-0 shadow-sm mx-auto" style={{maxWidth: '400px'}}>
-          <h5 className="alert-heading mb-2">
-            <i className="bi bi-info-circle me-2"></i>
-            No Plans Available
-          </h5>
-          <p className="mb-0">No Proposed Financial Plans have been added yet. Create your first plan to get started!</p>
-        </div>
-        <button className="btn btn-primary mt-3">
-          <i className="bi bi-plus-circle me-2"></i>
-          Add New Plan
-        </button>
-      </div>
-    )}
-  </div>
 
-  <style jsx>{`
-    
-    .card {
-      transition: all 0.3s ease;
-      border-radius: 12px !important;
-    }
-    
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
-    }
-    
-    .rounded-circle {
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .bg-light {
-      background-color: #f8f9fa !important;
-      border: 1px solid #e9ecef;
-    }
-  `}</style>
-                   </TabPanel>
+                    <style jsx>{`
+                      .card {
+                        transition: all 0.3s ease;
+                        border-radius: 12px !important;
+                      }
 
-                   
-                   {/* // kyc tab */}
-                   <TabPanel>
-                    <KycComponent id={id} familyMembers={userData?.familyMembers} />
+                      .card:hover {
+                        transform: translateY(-5px);
+                        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+                      }
+
+                      .rounded-circle {
+                        width: 40px;
+                        height: 40px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                      }
+
+                      .bg-light {
+                        background-color: #f8f9fa !important;
+                        border: 1px solid #e9ecef;
+                      }
+                    `}</style>
                   </TabPanel>
 
-
-                   {/* // tasks tab */}
-                   <TabPanel>
-                    <TasksTab/>
+                  {/* // kyc tab */}
+                  <TabPanel>
+                    <KycComponent
+                      id={id}
+                      familyMembers={userData?.familyMembers}
+                    />
                   </TabPanel>
-                  
 
-                     {/* model open */}
+                  {/* // tasks tab */}
+                  <TabPanel>
+                    <TasksTab />
+                  </TabPanel>
+
+                  {/* model open */}
                   <Modal
                     show={showModal}
                     onHide={handleCloseModal}
@@ -1031,7 +1204,8 @@ const CustomerDetail = () => {
                   >
                     <Modal.Header closeButton>
                       <Modal.Title>
-                        {modalType === "insurance" && "Insurance Policies Details"}
+                        {modalType === "insurance" &&
+                          "Insurance Policies Details"}
                         {modalType === "investment" && "Investment Details"}
                         {modalType === "loan" && "Loan & Liabilities Details"}
                       </Modal.Title>
@@ -1086,72 +1260,103 @@ const CustomerDetail = () => {
                         {/* Body */}
                         <tbody>
                           {modalType === "insurance" &&
-                            userData?.financialInfo?.insurance?.map((item, index) => (
-                              <tr key={item._id || index}>
-                                <td>{item.policyNumber || 'N/A'}</td>
-                                <td>{item.planName || 'N/A'}</td>
-                                <td>{item.insuranceCompany || 'N/A'}</td>
-                                <td>{item.memberName || 'N/A'}</td>
-                                <td>{item.premium ? formatCurrency(item.premium) : 'N/A'}</td>
-                                <td>{item.sumAssured ? formatCurrency(item.sumAssured) : 'N/A'}</td>
-                                <td>{formatDate(item.startDate)}</td>
-                                <td>{formatDate(item.maturityDate)}</td>
-                                <td>{item.mode || 'N/A'}</td>
-                              </tr>
-                            ))
-                          }
+                            userData?.financialInfo?.insurance?.map(
+                              (item, index) => (
+                                <tr key={item._id || index}>
+                                  <td>{item.policyNumber || "N/A"}</td>
+                                  <td>{item.planName || "N/A"}</td>
+                                  <td>{item.insuranceCompany || "N/A"}</td>
+                                  <td>{item.memberName || "N/A"}</td>
+                                  <td>
+                                    {item.premium
+                                      ? formatCurrency(item.premium)
+                                      : "N/A"}
+                                  </td>
+                                  <td>
+                                    {item.sumAssured
+                                      ? formatCurrency(item.sumAssured)
+                                      : "N/A"}
+                                  </td>
+                                  <td>{formatDate(item.startDate)}</td>
+                                  <td>{formatDate(item.maturityDate)}</td>
+                                  <td>{item.mode || "N/A"}</td>
+                                </tr>
+                              )
+                            )}
 
                           {modalType === "investment" &&
-                            userData?.financialInfo?.investments?.map((item, index) => (
-                              <tr key={item._id || index}>
-                                <td>{item.companyName || 'N/A'}</td>
-                                <td>{item.financialProduct || 'N/A'}</td>
-                                <td>{item.planName || 'N/A'}</td>
-                                <td>{item.memberName || 'N/A'}</td>
-                                <td>{item.amount ? formatCurrency(item.amount) : 'N/A'}</td>
-                                <td>{formatDate(item.startDate)}</td>
-                                <td>{formatDate(item.maturityDate)}</td>
-                                <td>{formatDate(item.submissionDate)}</td>
-                              </tr>
-                            ))
-                          }
+                            userData?.financialInfo?.investments?.map(
+                              (item, index) => (
+                                <tr key={item._id || index}>
+                                  <td>{item.companyName || "N/A"}</td>
+                                  <td>{item.financialProduct || "N/A"}</td>
+                                  <td>{item.planName || "N/A"}</td>
+                                  <td>{item.memberName || "N/A"}</td>
+                                  <td>
+                                    {item.amount
+                                      ? formatCurrency(item.amount)
+                                      : "N/A"}
+                                  </td>
+                                  <td>{formatDate(item.startDate)}</td>
+                                  <td>{formatDate(item.maturityDate)}</td>
+                                  <td>{formatDate(item.submissionDate)}</td>
+                                </tr>
+                              )
+                            )}
 
                           {modalType === "loan" &&
-                            userData?.financialInfo?.loans?.map((item, index) => (
-                              <tr key={item._id || index}>
-                                <td>{item.loanAccountNumber || 'N/A'}</td>
-                                <td>{item.loanType || 'N/A'}</td>
-                                <td>{item.companyName || 'N/A'}</td>
-                                <td>{item.memberName || 'N/A'}</td>
-                                <td>{item.outstandingAmount ? formatCurrency(item.outstandingAmount) : 'N/A'}</td>
-                                <td>{item.interestRate ? `${item.interestRate}%` : 'N/A'}</td>
-                                <td>{item.term || 'N/A'}</td>
-                                <td>{formatDate(item.startDate)}</td>
-                                <td>{formatDate(item.maturityDate)}</td>
-                              </tr>
-                            ))
-                          }
+                            userData?.financialInfo?.loans?.map(
+                              (item, index) => (
+                                <tr key={item._id || index}>
+                                  <td>{item.loanAccountNumber || "N/A"}</td>
+                                  <td>{item.loanType || "N/A"}</td>
+                                  <td>{item.companyName || "N/A"}</td>
+                                  <td>{item.memberName || "N/A"}</td>
+                                  <td>
+                                    {item.outstandingAmount
+                                      ? formatCurrency(item.outstandingAmount)
+                                      : "N/A"}
+                                  </td>
+                                  <td>
+                                    {item.interestRate
+                                      ? `${item.interestRate}%`
+                                      : "N/A"}
+                                  </td>
+                                  <td>{item.term || "N/A"}</td>
+                                  <td>{formatDate(item.startDate)}</td>
+                                  <td>{formatDate(item.maturityDate)}</td>
+                                </tr>
+                              )
+                            )}
                         </tbody>
                       </Table>
 
                       {/* Show message if no data */}
-                      {modalType === "insurance" && (!userData?.financialInfo?.insurance || userData.financialInfo.insurance.length === 0) && (
-                        <div className="text-center py-4">
-                          <p className="text-muted">No insurance policies found</p>
-                        </div>
-                      )}
+                      {modalType === "insurance" &&
+                        (!userData?.financialInfo?.insurance ||
+                          userData.financialInfo.insurance.length === 0) && (
+                          <div className="text-center py-4">
+                            <p className="text-muted">
+                              No insurance policies found
+                            </p>
+                          </div>
+                        )}
 
-                      {modalType === "investment" && (!userData?.financialInfo?.investments || userData.financialInfo.investments.length === 0) && (
-                        <div className="text-center py-4">
-                          <p className="text-muted">No investments found</p>
-                        </div>
-                      )}
+                      {modalType === "investment" &&
+                        (!userData?.financialInfo?.investments ||
+                          userData.financialInfo.investments.length === 0) && (
+                          <div className="text-center py-4">
+                            <p className="text-muted">No investments found</p>
+                          </div>
+                        )}
 
-                      {modalType === "loan" && (!userData?.financialInfo?.loans || userData.financialInfo.loans.length === 0) && (
-                        <div className="text-center py-4">
-                          <p className="text-muted">No loans found</p>
-                        </div>
-                      )}
+                      {modalType === "loan" &&
+                        (!userData?.financialInfo?.loans ||
+                          userData.financialInfo.loans.length === 0) && (
+                          <div className="text-center py-4">
+                            <p className="text-muted">No loans found</p>
+                          </div>
+                        )}
                     </Modal.Body>
 
                     <Modal.Footer>
@@ -1160,10 +1365,6 @@ const CustomerDetail = () => {
                       </Button>
                     </Modal.Footer>
                   </Modal>
-
-
-                  
-
                 </Tabs>
               </div>
             </div>

@@ -227,7 +227,7 @@ const ProposedPlanForm = ({ clientId, clientData, onClientCreated }) => {
             </Row>
             <div className="d-flex gap-2">
               <Button variant="danger" onClick={() => removePlan(index)}>
-                Remove Plan
+                Remove Plan 
               </Button>
               <Button variant="success" onClick={() => savePlan(index)}>
                 Save Plan
