@@ -161,12 +161,10 @@ const Navbarfristn = () => {
                       <Dropdown.Item as={Link} to="/lead-occupation">
                         Lead Occupation
                       </Dropdown.Item>
-                      
+
                       <Dropdown.Item as={Link} to="/occupation-type">
                         Occupation Type
                       </Dropdown.Item>
-
-
                     </div>
                   </div>
                 </Dropdown.Menu>
@@ -214,7 +212,6 @@ const Navbarfristn = () => {
                       <Dropdown.Item as={Link} to="/client/add">
                         Add Client
                       </Dropdown.Item>
-                     
                     </div>
 
                     {/* Location Master */}

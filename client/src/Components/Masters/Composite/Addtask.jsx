@@ -17,9 +17,22 @@ import { fetchCompanyName } from "../../../redux/feature/ComapnyName/CompanyThun
 const Addtask = ({ on, data }) => {
   const dispatch = useDispatch();
 
+  const flat = {
+    ...data?.task,
+    category: data?.task?.cat?.category,
+    productName: data?.task?.cat?.name,
+    descText: data?.task?.descp?.text,
+    descImage: data?.task?.descp?.image,
+  };
+
   const { loading, error, successMessage } = useSelector(
     (state) => state.compositeTask
   );
+
+  console.log(data);
+  const [editImage, setEditImage] = useState(false);
+  const [editDownloadImage, SetEditDownloadImage] = useState(false);
+  const [editDownloadSampleImage, SetEditDownloadSampleImage] = useState(false);
 
   const [formData, setFormData] = useState({
     cat: "",
@@ -46,21 +59,19 @@ const Addtask = ({ on, data }) => {
     (state) => state.financialProduct.FinancialProducts || []
   );
   console.log(products);
-  
 
   // company name
   const company = useSelector((state) => state.CompanyName.CompanyNames || []);
   console.log(company);
-  
+
   // filter company name according to financial productconst filteredCompanies = company.filter(
   const filteredCompanies = company.filter(
     (item) => item.financialProduct?._id === formData.cat
   );
-  
-  
+
   useEffect(() => {
     if (data) {
-      setFormData(data);
+      // setFormData(data);
     }
   }, [data]);
 
@@ -95,6 +106,30 @@ const Addtask = ({ on, data }) => {
       dispatch(clearError());
     }
   }, [error, dispatch]);
+
+  useEffect(() => {
+    if (data) {
+      setFormData((prev) => ({
+        ...prev,
+        cat: flat?.cat?._id,
+        sub: flat?.sub,
+        depart: flat?.depart,
+        name: flat?.name,
+        type: flat?.type,
+        descp: { text: flat?.descp?.text, image: flat?.descp?.image },
+        email_descp: flat?.email_descp,
+        sms_descp: flat?.sms_descp,
+        whatsapp_descp: flat?.whatsapp_descp,
+        checklists: [flat?.checklists?.map((item) => item)],
+        formChecklists:
+          flat?.formChecklists?.map((item) => ({
+            name: item?.name,
+            downloadFormUrl: item?.downloadFormUrl,
+            sampleFormUrl: item?.sampleFormUrl,
+          })) || [],
+      }));
+    }
+  }, [data]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -216,8 +251,11 @@ const Addtask = ({ on, data }) => {
       });
 
       if (data) {
+        console.log(formData);
+        console.log(data?.task?._id);
+        
         await dispatch(
-          updateCompositeTask({ id: data._id, formData: formDataToSend })
+          updateCompositeTask({ id: data?.task?._id, formData: formDataToSend })
         );
       } else {
         await dispatch(createCompositeTask(formDataToSend));
@@ -263,6 +301,8 @@ const Addtask = ({ on, data }) => {
   ];
   // { id: "tab_7", label: "Sample Form", icon: "📋" },
 
+  console.log(flat);
+
   return (
     <div className="">
       <div className="card shadow-lg">
@@ -294,6 +334,7 @@ const Addtask = ({ on, data }) => {
                     name="cat"
                     className="form-control select2"
                     onChange={handleChange}
+                    // value={formData.cat || flat?.cat?._id}
                     value={formData.cat}
                   >
                     <option value="">Choose Financial Product</option>
@@ -313,7 +354,7 @@ const Addtask = ({ on, data }) => {
                   <select
                     name="sub"
                     className="form-control select2"
-                    value={formData.sub}
+                    value={formData.sub }
                     onChange={handleChange}
                   >
                     <option value="">Choose Company Name</option>
@@ -404,7 +445,7 @@ const Addtask = ({ on, data }) => {
                         <label>Detailed Description</label>
                         <CKEditor
                           editor={ClassicEditor}
-                          data={formData?.descp?.text || ""} // Fallback to empty string
+                          data={formData?.descp?.text } // Fallback to empty string
                           onChange={(event, editor) =>
                             handleEditorChange(
                               editor,
@@ -429,20 +470,44 @@ const Addtask = ({ on, data }) => {
                           }}
                         />
                         <div className="form-group mt-4">
-                          <label>Attach File</label>
-                          <div className="custom-file">
-                            <input
-                              type="file"
-                              name="descpImage"
-                              className="custom-file-input"
-                              id="customFile"
-                              onChange={handleChange}
-                            />
-                            <label
-                              className="custom-file-label"
-                              htmlFor="customFile"
-                            ></label>
-                          </div>
+                          {flat && !editImage ? (
+                            <div className="flex justify-center items-center p-4">
+                              <img
+                                src={`http://localhost:8080/images/${flat.descImage}`}
+                                alt="Uploaded"
+                                className=" w-[100px] max-w-sm rounded-xl shadow-md object-cover"
+                              />
+                              <button
+                                onClick={() => setEditImage(true)}
+                                className="px-4 py-1 border-2 rounded   m-2 bg-black text-white"
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <label>Attach File</label>
+                              <div className="custom-file flex gap-2">
+                                <input
+                                  type="file"
+                                  name="descpImage"
+                                  className="bg-gray-300 px-3 py-1 rounded custom-file-input"
+                                  id="customFile"
+                                  onChange={handleChange}
+                                />
+                                <label
+                                  className=" bg-red-500 custom-file-label"
+                                  htmlFor="customFile"
+                                ></label>
+                                <button
+                                  onClick={() => setEditImage(false)}
+                                  className="bg-red-900 text-white border rounded px-4 py-1"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -471,7 +536,7 @@ const Addtask = ({ on, data }) => {
                       </div>
                     </div>
                     <div className="card-body">
-                      {formData.checklists.map((checklist, index) => (
+                      {formData?.checklists?.map((checklist, index) => (
                         <div
                           key={index}
                           className="form-group row align-items-center mb-3"
@@ -527,7 +592,7 @@ const Addtask = ({ on, data }) => {
                         <label>Email Content</label>
                         <CKEditor
                           editor={ClassicEditor}
-                          data={formData.email_descp}
+                          data={formData?.email_descp }
                           onChange={(event, editor) =>
                             handleEditorChange(
                               editor,
@@ -571,7 +636,7 @@ const Addtask = ({ on, data }) => {
                         <label>SMS Content</label>
                         <CKEditor
                           editor={ClassicEditor}
-                          data={formData.sms_descp}
+                          data={formData?.sms_descp }
                           onChange={(event, editor) =>
                             handleEditorChange(
                               editor,
@@ -604,7 +669,7 @@ const Addtask = ({ on, data }) => {
                         <label>WhatsApp Message</label>
                         <CKEditor
                           editor={ClassicEditor}
-                          data={formData.whatsapp_descp}
+                          data={formData?.whatsapp_descp }
                           onChange={(event, editor) =>
                             handleEditorChange(
                               editor,
@@ -641,7 +706,7 @@ const Addtask = ({ on, data }) => {
                       </button>
                     </div>
                     <div className="card-body">
-                      {formData.formChecklists.map((item, index) => (
+                      {formData?.formChecklists?.map((item, index) => (
                         <div
                           key={index}
                           className="border rounded p-3 mb-3 d-flex g-4 justify-content-between w-100"
@@ -651,7 +716,9 @@ const Addtask = ({ on, data }) => {
                             <input
                               type="text"
                               className="form-control"
-                              value={item.name}
+                              value={
+                                 item.name
+                              }
                               onChange={(e) =>
                                 updateFormChecklist(
                                   index,
@@ -663,47 +730,113 @@ const Addtask = ({ on, data }) => {
                             />
                           </div>
 
-                          <div className="form-group">
-                            <label>Blank Form</label>
-                            <input
-                              type="file"
-                              className="form-control"
-                              onChange={(e) =>
-                                updateFormChecklist(
-                                  index,
-                                  "downloadFormUrl",
-                                  e.target.files[0]
-                                )
-                              }
-                            />
-                            {item.downloadFormUrl &&
-                              typeof item.downloadFormUrl === "string" && (
-                                <small className="text-success">
-                                  Existing file: {item.downloadFormUrl}
-                                </small>
-                              )}
-                          </div>
+                          {flat && !editDownloadImage ? (
+                            flat?.formChecklists?.map((imgs, index) => (
+                              <div
+                                key={index}
+                                className=" w-[5  0px] h-[20px] flex justify-center items-center p-4"
+                              >
+                                <img
+                                  src={`http://localhost:8080/images/${imgs.downloadFormUrl}`}
+                                  alt="Uploaded"
+                                  className=" w-[50px]  max-w-sm rounded-xl shadow-md object-cover"
+                                />
+                                <button
+                                  onClick={() => SetEditDownloadImage(true)}
+                                  className="px-4 py-1 border-2 rounded   m-2 bg-black text-white"
+                                >
+                                  Edit
+                                </button>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="form-group">
+                              <label>Blank Form</label>
+                              <input
+                                type="file"
+                                className="form-control"
+                                onChange={(e) =>
+                                  updateFormChecklist(
+                                    index,
+                                    "downloadFormUrl",
+                                    e.target.files[0]
+                                  )
+                                }
+                              />
+                              {item.downloadFormUrl &&
+                                typeof item.downloadFormUrl === "string" && (
+                                  <small className="text-success">
+                                    Existing file: {item.downloadFormUrl}
+                                  </small>
+                                )}
 
-                          <div className="form-group">
-                            <label>Sample Form</label>
-                            <input
-                              type="file"
-                              className="form-control"
-                              onChange={(e) =>
-                                updateFormChecklist(
-                                  index,
-                                  "sampleFormUrl",
-                                  e.target.files[0]
-                                )
-                              }
-                            />
-                            {item.sampleFormUrl &&
-                              typeof item.sampleFormUrl === "string" && (
-                                <small className="text-success">
-                                  Existing file: {item.sampleFormUrl}
-                                </small>
-                              )}
-                          </div>
+                              <button
+                                onClick={() =>
+                                  SetEditDownloadImage(!editDownloadImage)
+                                }
+                                className="bg-red-900 px-4 py-1 text-white 
+                                flex mt-2 rounded"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
+
+                          {flat && !editDownloadSampleImage ? (
+                            flat?.formChecklists?.map((imgs, index) => (
+                              <div
+                                key={index}
+                                className=" w-[5  0px] h-[20px] flex justify-center items-center p-4"
+                              >
+                                <img
+                                  src={`http://localhost:8080/images/${imgs.sampleFormUrl}`}
+                                  alt="Uploaded"
+                                  className=" w-[50px]  max-w-sm rounded-xl shadow-md object-cover"
+                                />
+                                <button
+                                  onClick={() =>
+                                    SetEditDownloadSampleImage(true)
+                                  }
+                                  className="px-4 py-1 border-2 rounded   m-2 bg-black text-white"
+                                >
+                                  Edit
+                                </button>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="form-group">
+                              <label>Sample Form</label>
+                              <input
+                                type="file"
+                                className="form-control"
+                                onChange={(e) =>
+                                  updateFormChecklist(
+                                    index,
+                                    "sampleFormUrl",
+                                    e.target.files[0]
+                                  )
+                                }
+                              />
+                              {item.sampleFormUrl &&
+                                typeof item.sampleFormUrl === "string" && (
+                                  <small className="text-success">
+                                    Existing file: {item.sampleFormUrl}
+                                  </small>
+                                )}
+
+                              <button
+                                onClick={() =>
+                                  SetEditDownloadSampleImage(
+                                    !editDownloadSampleImage
+                                  )
+                                }
+                                className="bg-red-900 px-4 py-1 text-white 
+                                flex mt-2 rounded"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
 
                           <div className="text-right">
                             {index > 0 && (

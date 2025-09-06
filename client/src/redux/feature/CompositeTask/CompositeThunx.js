@@ -67,6 +67,8 @@ export const fetchCompositeTaskById = createAsyncThunk(
 export const updateCompositeTask = createAsyncThunk(
   "compositeTask/update",
   async ({ id, formData }, { rejectWithValue }) => {
+    console.log(id,formData);
+    
     try {
       const response = await axios.put(
         `${API_URL}/${id}?type=composite`,
@@ -75,7 +77,9 @@ export const updateCompositeTask = createAsyncThunk(
           headers: { "Content-Type": "multipart/form-data" },
         }
       );
-      return response.data.task;
+      console.log(response);
+      
+      return response?.data?.task;
     } catch (err) {
       return rejectWithValue(err.response?.data?.message || err.message);
     }
@@ -86,6 +90,8 @@ export const updateCompositeTask = createAsyncThunk(
 export const deleteCompositeTask = createAsyncThunk(
   "compositeTask/delete",
   async (id, { rejectWithValue }) => {
+    console.log(id);
+    
     try {
       await axios.delete(`${API_URL}/delete/${id}?type=composite`);
       return id;

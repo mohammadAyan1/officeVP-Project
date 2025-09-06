@@ -1,4 +1,7 @@
-/* Main Container */
+
+/* @import "tailwindcss"; */
+
+
 body {
   background-color: #f5f5f5 !important;
   margin: 0;
@@ -8,21 +11,18 @@ body {
 
 .custom-fullscreen-modal {
   max-width: 100vw !important;
-  width: 80vw !important; /* 10% margin on both sides */
-  margin: 5% auto; /* 5% top and bottom */
+  width: 80vw !important;
+  margin: 5% auto;
   height: 90vh;
   overflow-y: auto;
   border-radius: 12px;
   padding: 20px;
 }
 
-
 #optionss {
   color: black !important;
 }
 
-
-/* Custom tab base styles */
 .custom-tab {
   color: #333;
   font-weight: 500;
@@ -31,18 +31,15 @@ body {
   transition: all 0.3s ease;
 }
 
-/* On hover */
 .custom-tab:hover {
   background-color: #ffe7df;
 }
 
-/* Active tab style */
 .active-custom {
   background-color: #ff5722 !important;
   color: white !important;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
 }
-
 
 .info-line {
   display: flex;
@@ -55,22 +52,16 @@ body {
   position: relative;
 }
 
-/* Blue Header */
 .blue-header {
   padding: 15px 0;
-
-  /* background-color: red; */
-  /* background: linear-gradient(135deg, #1976d2, #1e4adb); */
 }
 
 .brand-title {
   font-size: 24px;
   font-weight: 500;
   margin: 0;
-  /* color: white; */
 }
 
-/* Dashboard Section */
 .dashboard-section {
   position: relative;
   padding: 30px 0;
@@ -98,7 +89,6 @@ body {
   margin: 4px 0 0 0;
 }
 
-/* Main Navigation */
 .main-navigation {
   width: 85vw;
   position: absolute;
@@ -140,7 +130,6 @@ body {
   font-weight: 500;
 }
 
-/* Dropdown styles */
 .dropdown-hover {
   position: relative;
 }
@@ -175,7 +164,6 @@ body {
   color: #1976d2 !important;
 }
 
-/* Responsive adjustments */
 @media (max-width: 1200px) {
   .main-navigation {
     width: 95vw;
@@ -202,19 +190,14 @@ body {
     border-radius: 0;
   }
   .main-navigation {
-    /* position: absolute; */
-    /* border-radius: 5px; */
     top: -20px;
-    /* left: 50%; */
+
     transform: translateX(-50%);
     background: white;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     z-index: 1000;
   }
 }
-/* Navbar.css */
-
-/* Blue Header */
 
 .brand-title {
   font-size: 24px;
@@ -222,7 +205,6 @@ body {
   margin: 0;
 }
 
-/* Dashboard Section */
 .dashboard-section {
   background: #2b3a4a;
   color: white;
@@ -246,7 +228,6 @@ body {
   color: #b0bec5;
 }
 
-/* Main Navigation */
 .main-navigation {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   position: relative;
@@ -295,7 +276,6 @@ body {
   transition: transform 0.3s;
 }
 
-/* Dropdown styles */
 .dropdown-hover:hover .dropdown-menu {
   display: block;
   margin-top: 0;
@@ -319,12 +299,10 @@ body {
   color: #1976d2 !important;
 }
 
-/* Remove default caret */
 .dropdown-toggle::after {
   display: none !important;
 }
 
-/* Responsive styles */
 @media (min-width: 992px) {
   .main-navigation {
     padding: 0;
@@ -366,7 +344,7 @@ body {
     justify-content: flex-start;
     padding: 12px15px !important;
     border-bottom: 1px solid #eee;
-    /* text-align: right; */
+
     align-items: start;
   }
 
@@ -400,14 +378,11 @@ body {
   }
 }
 .custom-dropdown {
-  min-width: 600px; /* Default for larger screens */
+  min-width: 600px;
 }
-/* Show dropdown on hover (desktop only) */
-
-/* Mobile view dropdown compact */
 @media (max-width: 768px) {
   .custom-dropdown {
-    min-width: 200px; /* Adjust to 200px for mobile */
+    min-width: 200px; 
   }
 
   .nav-item.dropdown-hover:hover > .dropdown-menu {
@@ -419,7 +394,7 @@ body {
   }
   .dropdown-menu-multicol {
     min-width: 40px !important;
-    /* width: auto; */
+    
     display: block !important;
   }
 
@@ -438,3 +413,5 @@ body {
     font-size: 12px;
   }
 }
+
+

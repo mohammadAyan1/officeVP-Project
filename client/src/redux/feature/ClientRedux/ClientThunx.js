@@ -45,6 +45,8 @@ export const addFamilyMember = createAsyncThunk(
 export const addFinancialInfo = createAsyncThunk(
   'client/addFinancialInfo',
   async ({ clientId, financialData }, { rejectWithValue }) => {
+    console.log(clientId,financialData);
+    
     try {
       const response = await axios.put(`/api/client/add/financialinfo/${clientId}`, financialData);
       console.log("Add financial info successfully", response?.data?.clientId)

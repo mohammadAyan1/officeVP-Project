@@ -58,6 +58,8 @@ const Composite = () => {
   };
 
   const handleEdit = async (id) => {
+    console.log("68baa5339c24d4341164582d");
+    console.log(id);
     setActiveTab("add");
     const res = await dispatch(fetchCompositeTaskById(id)).unwrap();
     setUpdate(res);
@@ -72,6 +74,7 @@ const Composite = () => {
   const indexOfLastEntry = currentPage * entriesPerPage;
   const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
   const displayedTasks = tasks || { tasks: [] } || 1;
+  console.log(displayedTasks);
 
   const currentEntries = (displayedTasks?.tasks || []).slice(
     indexOfFirstEntry,
@@ -251,8 +254,11 @@ const Composite = () => {
                         <div className="col-sm-5">
                           <div className="dataTables_info">
                             Showing {indexOfFirstEntry + 1} to{" "}
-                            {Math.min(indexOfLastEntry, displayedTasks.length)}{" "}
-                            of {displayedTasks.length} entries
+                            {Math.min(
+                              indexOfLastEntry,
+                              displayedTasks?.tasks?.length
+                            )}{" "}
+                            of {displayedTasks?.tasks?.length} entries
                           </div>
                         </div>
                         <div className="col-sm-7">

@@ -88,10 +88,14 @@ const compositeTaskSlice = createSlice({
       })
       .addCase(updateCompositeTask.fulfilled, (state, action) => {
         state.loading = false;
-        const index = state.tasks.findIndex(
-          (t) => t._id === action.payload._id
-        );
-        if (index !== -1) state.tasks[index] = action.payload;
+        // console.log(state?.tasks);
+        state.tasks = action.payload
+        // const index = state.tasks.findIndex(
+        //   (t) => t._id === action.payload._id
+        // );
+        // if (index !== -1) state.tasks[index] = action.payload;
+        // console.log(index);
+        
         state.successMessage = "Task updated successfully.";
       })
       .addCase(updateCompositeTask.rejected, (state, action) => {
@@ -106,7 +110,8 @@ const compositeTaskSlice = createSlice({
       })
       .addCase(deleteCompositeTask.fulfilled, (state, action) => {
         state.loading = false;
-        state.tasks = state.tasks.filter((task) => task._id !== action.payload);
+        // state.tasks = state.tasks.filter((task) => task._id !== action.payload);
+        state.tasks = action.payload
         state.successMessage = "Task deleted successfully.";
       })
       .addCase(deleteCompositeTask.rejected, (state, action) => {
